@@ -2,65 +2,86 @@
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
-    <title>人生設計サバイバル</title>
+    <title>人生設計サバイバル | 学費・詳細内訳版</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         :root {
-            --sidebar-width: 250px;
-            --main-bg: #f8f9fa;
+            --sidebar-width: 270px;
+            --main-bg: #f4f7f9;
             --accent: #3498db;
+            --invest: #27ae60;
             --danger: #e74c3c;
             --success: #2ecc71;
             --text: #2c3e50;
             --card-bg: #ffffff;
         }
         body { font-family: 'Helvetica Neue', Arial, sans-serif; margin: 0; display: flex; height: 100vh; overflow: hidden; color: var(--text); }
-        .sidebar { width: var(--sidebar-width); background: var(--text); color: white; display: flex; flex-direction: column; padding-top: 20px; flex-shrink: 0; }
-        .tab-btn { background: none; border: none; color: #adb5bd; padding: 15px 20px; text-align: left; cursor: pointer; border-left: 4px solid transparent; transition: 0.3s; font-size: 0.9rem; width: 100%; }
-        .tab-btn:hover { background: #3e5871; color: white; }
+
+        /* サイドバー */
+        .sidebar { width: var(--sidebar-width); background: var(--text); color: white; display: flex; flex-direction: column; flex-shrink: 0; }
+        .sim-btn-container { padding: 25px 20px; background: #1a252f; border-bottom: 1px solid #34495e; }
+        .btn-simulate { width:100%; padding:18px; background:var(--accent); color:white; border:none; border-radius:10px; cursor:pointer; font-weight:bold; font-size: 1.1rem; box-shadow: 0 4px 0 #2980b9; transition: 0.1s; }
+        .btn-simulate:active { transform: translateY(2px); box-shadow: 0 2px 0 #2980b9; }
+
+        .tab-btn { background: none; border: none; color: #adb5bd; padding: 15px 20px; text-align: left; cursor: pointer; border-left: 4px solid transparent; width: 100%; font-size: 0.95rem; }
         .tab-btn.active { background: #34495e; color: white; border-left: 4px solid var(--accent); }
-        .sub-tab-container { background: #2c3e50; }
         .sub-tab { padding-left: 40px; font-size: 0.85rem; background: #243342; }
-        .main-content { flex: 1; background: var(--main-bg); overflow-y: auto; padding: 30px; display: grid; grid-template-columns: 1fr 400px; gap: 25px; }
-        .card { background: var(--card-bg); padding: 20px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); margin-bottom: 20px; }
+
+        /* メインエリア */
+        .main-content { flex: 1; background: var(--main-bg); overflow-y: auto; padding: 30px; display: grid; grid-template-columns: 1fr 420px; gap: 25px; }
+        .card { background: var(--card-bg); padding: 20px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); margin-bottom: 25px; border: 1px solid #eef0f2; }
         .tab-content { display: none; }
         .tab-content.active { display: block; animation: fadeIn 0.3s; }
-        .section-title { font-size: 0.95rem; font-weight: bold; margin: 20px 0 10px 0; color: var(--accent); border-bottom: 1px solid #eee; padding-bottom: 5px; }
-        .unit-input { position: relative; display: flex; align-items: center; margin-bottom: 8px; }
-        .unit-input input, .unit-input select { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; box-sizing: border-box; }
-        .unit-man::after { content: "万円"; position: absolute; right: 12px; font-size: 0.8rem; color: #888; }
-        .unit-percent::after { content: "%"; position: absolute; right: 12px; font-size: 0.8rem; color: #888; }
-        .disabled-field { background-color: #f1f1f1 !important; color: #aaa !important; cursor: not-allowed; opacity: 0.5; pointer-events: none; }
-        .toggle-container { display: flex; gap: 10px; margin-bottom: 15px; }
-        .toggle-btn { flex: 1; padding: 10px; border: 1px solid #ddd; border-radius: 6px; text-align: center; cursor: pointer; background: white; transition: 0.2s; }
-        .toggle-btn.active { background: var(--accent) !important; color: white !important; }
-        .expand-panel { display: none; background: #f9f9f9; padding: 15px; border-radius: 8px; border: 1px solid #eee; margin-top: 10px; }
-        .pl-table { width: 100%; font-size: 0.85rem; border-collapse: collapse; }
-        .pl-table tr { border-bottom: 1px solid #eee; }
-        .pl-table td { padding: 12px 5px; }
-        .pl-label { color: #666; }
-        .pl-val { text-align: right; font-weight: bold; }
-        .pl-total { background: #f8f9fa; font-weight: bold; border-top: 2px solid var(--text); }
-        .pl-detail-box { font-size: 0.75rem; color: #7f8c8d; background: #fdfdfd; padding: 8px; border-radius: 4px; margin-top: 4px; line-height: 1.4; border-left: 3px solid #ddd; }
-        table.result-table { width: 100%; border-collapse: collapse; font-size: 0.75rem; }
-        .result-table th, .result-table td { border-bottom: 1px solid #eee; padding: 8px; text-align: right; }
-        .selected-row { background-color: #e3f2fd !important; }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        .section-title { font-size: 0.95rem; font-weight: bold; margin: 20px 0 12px 0; color: var(--accent); border-bottom: 2px solid #f1f3f5; padding-bottom: 8px; }
+
+        /* 入力UI */
+        .unit-input { position: relative; display: flex; align-items: center; margin-bottom: 10px; }
+        .unit-input input, .unit-input select { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 1rem; }
+        .unit-man::after { content: "万円"; position: absolute; right: 15px; color: #888; font-size: 0.85rem; }
+        .toggle-container { display: flex; gap: 10px; margin-bottom: 15px; }
+        .toggle-btn { flex: 1; padding: 12px; border: 1px solid #ddd; border-radius: 8px; text-align: center; cursor: pointer; background: white; font-weight: bold; }
+        .toggle-btn.active { background: var(--accent) !important; color: white !important; }
+
+        /* ステッパー */
+        .stepper { display: flex; align-items: center; gap: 8px; background: #fff; border: 1px solid #ddd; border-radius: 8px; padding: 5px 10px; }
+        .stepper button { background: #f1f3f5; border: none; width: 35px; height: 35px; cursor: pointer; border-radius: 6px; font-weight: bold; }
+
+        /* イベント設定 */
+        .event-row { display: grid; grid-template-columns: 2fr 1fr 1fr 1.5fr 40px; gap: 10px; background: #fff; padding: 12px; border: 1px solid #eee; border-radius: 8px; margin-bottom: 8px; }
+
+        /* 結果テーブル */
+        .result-table { width: 100%; border-collapse: collapse; background: white; }
+        .result-table th { background: #f1f3f5; padding: 12px; font-size: 0.75rem; border-bottom: 2px solid #dee2e6; position: sticky; top: 0; }
+        .result-table td { padding: 10px; border-bottom: 1px solid #eee; text-align: right; font-size: 0.85rem; }
+        .result-table tr:hover { background: #f0f7ff; cursor: pointer; }
+        .val-plus { color: var(--success); font-weight: bold; }
+        .val-minus { color: var(--danger); font-weight: bold; }
+
+        /* P/L詳細 */
+        .pl-card { position: sticky; top: 20px; border-top: 5px solid var(--accent); }
+        .pl-table { width: 100%; border-collapse: collapse; }
+        .pl-table td { padding: 12px 5px; border-bottom: 1px solid #f8f9fa; font-size: 0.9rem; }
+        .pl-category { color: #7f8c8d; font-size: 0.75rem; font-weight: bold; background: #f8f9fa; padding: 5px 10px !important; }
+        .pl-val { text-align: right; font-weight: bold; }
     </style>
 </head>
 <body>
 
 <div class="sidebar">
-    <h2 style="text-align:center; font-size:1.1rem;">人生サバイバル</h2>
+    <div class="sim-btn-container">
+        <button class="btn-simulate" onclick="simulate()">シミュレーション実行</button>
+    </div>
     <button class="tab-btn active" onclick="openTab(event, 'basic')">🏠 基本設定</button>
     <div class="sub-tab-container">
-        <button class="tab-btn sub-tab" onclick="openTab(event, 'detailIncome')">├ 収入設定</button>
-        <button class="tab-btn sub-tab" onclick="openTab(event, 'detailLiving')">├ 学費・生活費</button>
+        <button class="tab-btn sub-tab" onclick="openTab(event, 'detailIncome')">├ 収入詳細 (年齢別)</button>
+        <button class="tab-btn sub-tab" onclick="openTab(event, 'detailLiving')">├ 生活費・学費</button>
         <button class="tab-btn sub-tab" onclick="openTab(event, 'detailCar')">├ 自動車設定</button>
-        <button class="tab-btn sub-tab" onclick="openTab(event, 'detailInvest')">└ 投資・出口戦略</button>
+        <button class="tab-btn sub-tab" onclick="openTab(event, 'detailEvent')">└ ライフイベント</button>
     </div>
-    <div style="margin-top: auto; padding: 20px;">
-        <button onclick="simulate()" style="width:100%; padding:15px; background:var(--accent); color:white; border:none; border-radius:10px; cursor:pointer; font-weight:bold;">計算実行</button>
+    <div class="sub-tab-container" style="border-top:1px solid #34495e;">
+        <button id="navInvest" class="tab-btn sub-tab" onclick="openTab(event, 'detailInvest')" style="display:none;">💰 資産運用詳細</button>
     </div>
 </div>
 
@@ -69,263 +90,440 @@
         <div id="basic" class="tab-content active">
             <h1>基本設定</h1>
             <div class="card">
-                <div class="section-title">必須ステータス</div>
-                <div style="display:flex; gap:15px; margin-bottom:15px;">
-                    <div style="flex:1;"><label>現在の年齢</label><input type="number" id="baseAge" value="25" oninput="refreshIncomeGrid()"></div>
-                    <div style="flex:1;"><label>初期現金</label><div class="unit-input unit-man"><input type="number" id="baseInitialCash" value="100"></div></div>
+                <div class="section-title">現在の状況</div>
+                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:15px; margin-bottom:15px;">
+                    <div><label>現在の年齢</label><input type="number" id="baseAge" value="25" class="unit-input"></div>
+                    <div><label>初期現金</label><div class="unit-input unit-man"><input type="number" id="baseInitialCash" value="100"></div></div>
+                    <div><label>初期投資額</label><div class="unit-input unit-man"><input type="number" id="baseInitialInvest" value="0"></div></div>
                 </div>
 
-                <div class="section-title">収入の設定</div>
-                <label><input type="radio" name="incomeModeBasic" value="fixed" checked onclick="syncIncomeMode('fixed')"> 一括設定（平均年収）</label>
-                <div class="unit-input unit-man" id="basicSalaryContainer">
-                    <input type="number" id="baseSalaryBasic" value="450">
+                <div class="section-title">年収設定</div>
+                <div class="toggle-container">
+                    <div id="incFixed" class="toggle-btn active" onclick="setIncomeMode('fixed')">一括設定</div>
+                    <div id="incVar" class="toggle-btn" onclick="setIncomeMode('variable')">年齢別詳細</div>
                 </div>
-                <label style="margin-top:10px; display:inline-block;"><input type="radio" name="incomeModeBasic" value="variable" onclick="syncIncomeMode('variable')"> 個別設定（年齢別）</label>
-                <div id="basicVariableGuide" style="display:none; font-size:0.8rem; color:var(--accent); padding:5px;">👉 「収入設定」タブで詳細を入力してください</div>
+                <div id="fixedIncomeBox" class="unit-input unit-man"><input type="number" id="baseSalaryBasic" value="400"></div>
 
                 <div class="section-title">ライフスタイル</div>
-                <label>結婚の予定</label>
                 <div class="toggle-container">
-                    <div id="mOff" class="toggle-btn active" onclick="setToggle('married', false)">しない</div>
-                    <div id="mOn" class="toggle-btn" onclick="setToggle('married', true)">する</div>
+                    <div id="mOff" class="toggle-btn active" onclick="setMarriage(false)">独身</div>
+                    <div id="mOn" class="toggle-btn" onclick="setMarriage(true)">結婚</div>
                 </div>
-                <div id="basicMarriedExpand" class="expand-panel">
-                    <div style="display:flex; gap:10px; margin-bottom:10px;">
-                        <div style="flex:1;"><label>結婚年齢</label><input type="number" id="mAge" value="30"></div>
-                        <div style="flex:1;"><label>子供の数</label><select id="childCount" onchange="updateChildUI()"></select></div>
+                <div id="marriedPanel" style="display:none; background:#f0f7ff; padding:20px; border-radius:12px; border: 1px dashed var(--accent); margin-bottom:20px;">
+                    <div style="display:flex; justify-content:space-between; margin-bottom:15px; align-items:center;">
+                        <span style="font-weight:bold;">💍 結婚・育児</span>
+                        <button id="stdModeBtn" class="toggle-btn" style="flex:none; width:180px; font-size:0.75rem; padding:8px;" onclick="toggleStandardMode()">標準ライフイベント：OFF</button>
                     </div>
-                    <div id="childRaisingPanel" style="display:none;">
-                        <label>子供1人あたりの養育費/月</label>
-                        <div class="unit-input unit-man"><input type="number" id="childRaisingCost" value="6"></div>
+
+                    <div style="display:flex; gap:15px; flex-wrap:wrap; margin-bottom:15px;">
+                        <div><label>結婚年齢</label><input type="number" id="mAge" value="30" style="width:70px; padding:10px; border-radius:8px; border:1px solid #ddd;"></div>
+                        <div><label>子供の数</label><select id="childCount" onchange="updateChildInputs()" style="padding:10px; border-radius:8px; border:1px solid #ddd;"></select></div>
+                        <div style="flex:1;">
+                            <label>養育費/人(月)</label>
+                            <div class="stepper">
+                                <button onclick="adjChildCost(-1)">-</button>
+                                <input type="number" id="childCost" value="8" readonly>
+                                <button onclick="adjChildCost(1)">+</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="eduCostArea" style="display:none; border-top:1px solid #dcebf7; padding-top:15px;">
+                        <span style="font-size:0.9rem; font-weight:bold; color:#2980b9;">🏫 学費設定 (養育費とは別に加算)</span>
+                        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:15px; margin-top:10px;">
+                            <div><label>高校学費(年)</label><div class="unit-input unit-man"><input type="number" id="eduHigh" value="20"></div></div>
+                            <div><label>大学学費(年)</label><div class="unit-input unit-man"><input type="number" id="eduUni" value="120"></div></div>
+                        </div>
                     </div>
                 </div>
 
-                <label>資産運用の予定</label>
+                <div class="section-title">資産運用</div>
                 <div class="toggle-container">
-                    <div id="iOff" class="toggle-btn active" onclick="setToggle('invest', false)">しない</div>
-                    <div id="iOn" class="toggle-btn" onclick="setToggle('invest', true)">する</div>
+                    <div id="iOff" class="toggle-btn active" onclick="setInvest(false)">しない</div>
+                    <div id="iOn" class="toggle-btn" onclick="setInvest(true)">する</div>
                 </div>
-                <div id="basicInvestExpand" class="expand-panel">
-                    <label>毎月の積立額</label>
-                    <div class="unit-input unit-man"><input type="number" id="baseInvest" value="5"></div>
+                <div id="investBasicBox" style="display:none; background:#e3f2fd; padding:15px; border-radius:12px;">
+                    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:15px;">
+                        <div><label>毎月の積立額</label><div class="unit-input unit-man"><input type="number" id="investM" value="5"></div></div>
+                        <div><label>想定利回り(%)</label><input type="number" id="investRate" value="5"></div>
+                    </div>
+                    <p style="font-size:0.8rem; color:var(--accent); margin-top:5px;">👉 詳細は左メニューの「資産運用詳細」タブへ</p>
+                </div>
+            </div>
+
+            <div id="resultArea" style="display:none; margin-top:30px; border-top:3px solid var(--accent); padding-top:20px;">
+                <h1 style="color:var(--text); text-align:center;">📊 シミュレーション結果</h1>
+                <div id="deadAlert"></div>
+                <div class="card">
+                    <canvas id="mainChart" style="max-height:350px;"></canvas>
+                </div>
+                <div class="card">
+                    <div class="section-title">1年ごとの詳細推移</div>
+                    <table class="result-table">
+                        <thead><tr><th>年齢</th><th>額面年収</th><th>手取(年)</th><th>支出(月平均)</th><th>現金残高</th><th>投資残高</th><th>総資産</th></tr></thead>
+                        <tbody id="tableBody"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div id="detailInvest" class="tab-content">
+            <h1>資産運用の詳細設定</h1>
+            <div class="card">
+                <div class="section-title">積み立て設定</div>
+                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:15px;">
+                    <div><label>積立終了年齢</label><input type="number" id="investEndAge" value="60" class="unit-input"></div>
+                    <div><label>毎月の積立額</label><div class="unit-input unit-man"><input type="number" id="investM_Detail" value="5" oninput="document.getElementById('investM').value=this.value"></div></div>
+                </div>
+                <div class="section-title">運用・取り崩し設定</div>
+                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:15px;">
+                    <div><label>年利回り(%)</label><input type="number" id="investRate_Detail" value="5" class="unit-input" oninput="document.getElementById('investRate').value=this.value"></div>
+                    <div><label>取り崩し開始年齢</label><input type="number" id="withdrawStartAge" value="65" class="unit-input"></div>
+                </div>
+                <div style="margin-top:10px;">
+                    <label>年間取り崩し率(%)</label>
+                    <input type="number" id="withdrawRate" value="4" style="width:100px; padding:10px; border-radius:8px; border:1px solid #ddd;">
                 </div>
             </div>
         </div>
 
         <div id="detailIncome" class="tab-content">
-            <h1>詳細設定：収入</h1>
+            <h1>年齢別年収の設定</h1>
+            <div class="card"><div id="salaryGrid" style="display:grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap:12px;"></div>
+            <div class="section-title">定年・退職金・年金</div>
+            <div style="display:flex; gap:15px; flex-wrap:wrap;">
+                <div style="flex:1;"><label>定年年齢</label><input type="number" id="retireAge" value="65" class="unit-input"></div>
+                <div style="flex:1;"><label>退職金</label><div class="unit-input unit-man"><input type="number" id="retirementPay" value="2000"></div></div>
+                <div style="flex:1;"><label>年金受給開始</label><input type="number" id="pensionAge" value="65" class="unit-input"></div>
+                <div style="flex:1;"><label>年金月額(手取)</label><div class="unit-input unit-man"><input type="number" id="pensionMonthly" value="20"></div></div>
+            </div>
+            </div>
+        </div>
+
+        <div id="detailCar" class="tab-content">
+            <h1>自動車設定</h1>
             <div class="card">
-                <p id="detailIncomeAlert" style="color:var(--danger); font-size:0.8rem;">※現在は「一括設定」モードです</p>
-                <div class="section-title">年齢別年収設定</div>
-                <div id="salaryGrid" style="display:grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap:10px;"></div>
-                <div class="section-title">定年</div>
-                <label>定年年齢</label><input type="number" id="retireAge" value="65" oninput="refreshIncomeGrid()" style="width:80px; padding:8px;">
+                <div class="toggle-container">
+                    <div id="carOff" class="toggle-btn active" onclick="setCar(false)">所有しない</div>
+                    <div id="carOn" class="toggle-btn" onclick="setCar(true)">所有する</div>
+                </div>
+                <div id="carPanel" style="display:none;">
+                    <label>車両購入予算</label><div class="unit-input unit-man"><input type="number" id="carPrice" value="300"></div>
+                    <label>買い替えサイクル(年)</label><input type="number" id="carCycle" value="10" class="unit-input">
+                    <label>維持費/月（燃料・保険・税金等）</label><div class="unit-input unit-man"><input type="number" id="carRunM" value="4"></div>
+                </div>
             </div>
         </div>
 
         <div id="detailLiving" class="tab-content">
-            <h1>詳細設定：学費・生活費</h1>
+            <h1>生活費・学費</h1>
             <div class="card">
-                <label>独身時 生活費/月</label><div class="unit-input unit-man"><input type="number" id="baseLiving" value="20"></div>
-                <label>結婚後 生活費/月</label><div class="unit-input unit-man"><input type="number" id="marriedLiving" value="30"></div>
-                <div id="childSettingsContainer"></div>
+                <label>独身時の生活費(月)</label><div class="unit-input unit-man"><input type="number" id="baseLiving" value="20"></div>
+                <label>結婚後の生活費(月)</label><div class="unit-input unit-man"><input type="number" id="marriedLiving" value="30"></div>
+                <div id="childBirthSettings"></div>
             </div>
         </div>
 
-        <div id="detailCar" class="tab-content"><h1>詳細設定：自動車</h1><div class="card"><div class="toggle-container"><div id="carOff" class="toggle-btn active" onclick="setCarToggle(false)">なし</div><div id="carOn" class="toggle-btn" onclick="setCarToggle(true)">あり</div></div><div id="carExpand" style="display:none;"><label>購入年齢</label><input type="number" id="carAge" value="30"><label>価格</label><div class="unit-input unit-man"><input type="number" id="carPrice" value="300"></div><label>維持費/年</label><div class="unit-input unit-man"><input type="number" id="carMaintenance" value="35"></div></div></div></div>
-
-        <div id="detailInvest" class="tab-content">
-            <h1>詳細設定：投資</h1>
-            <div id="investMask" class="card disabled-field">
-                <label>年利回り</label><div class="unit-input unit-percent"><input type="number" id="baseRate" value="5"></div>
-                <label>取崩開始年齢</label><input type="number" id="startWithdrawAge" value="65" style="width:80px; padding:8px;">
-                <label>取崩率</label><div class="unit-input unit-percent"><input type="number" id="withdrawRate" value="4"></div>
+        <div id="detailEvent" class="tab-content">
+            <h1>ライフイベント</h1>
+            <div class="card">
+                <div style="background:#e3f2fd; padding:10px; border-radius:8px; margin-bottom:10px; font-size:0.9rem; color:var(--text);">
+                    ℹ️ <strong>入力方法</strong>：左から順に [イベント名] [発生年齢] [費用(万円)] [発生頻度] です。
+                </div>
+                <div id="eventList"></div>
+                <button class="btn-simulate" style="background:var(--success); margin-top:15px;" onclick="addEventRow()">+ イベント追加</button>
             </div>
-        </div>
-
-        <div id="resultArea" style="display:none;">
-            <div id="statusMessage"></div>
-            <div class="card"><canvas id="assetChart" style="max-height: 250px;"></canvas></div>
-            <div class="card"><table class="result-table"><thead><tr><th>年齢</th><th>現金</th><th>投資</th><th>学費(年)</th><th>合計</th></tr></thead><tbody id="tableBody"></tbody></table></div>
         </div>
     </div>
 
-    <div class="analysis-area" id="analysisArea" style="display:none;">
-        <div class="card" style="position: sticky; top: 20px;">
-            <h3 style="text-align:center; margin-top:0;">損益計算書 (P/L) <span id="pl-age-label" style="font-size:0.9rem; color:var(--accent);"></span></h3>
+    <div class="analysis-area">
+        <div id="plCard" class="card pl-card" style="display:none;">
+            <h3 style="text-align:center; margin-bottom:15px;">📝 <span id="plAgeText">--歳</span>の家計詳細</h3>
             <table class="pl-table">
-                <tr><td class="pl-label">給与手取り (月)</td><td class="pl-val" id="pl-salary">0万</td></tr>
-                <tr class="pl-total"><td>総収入</td><td class="pl-val" id="pl-total-income">0万</td></tr>
-                <tr><td class="pl-label">基本生活費</td><td class="pl-val" id="pl-living">0万</td></tr>
-                <tr><td class="pl-label">学費 (月按分)</td><td class="pl-val" id="pl-edu">0万</td></tr>
-                <tr><td colspan="2"><div id="pl-edu-detail" class="pl-detail-box">なし</div></td></tr>
-                <tr><td class="pl-label">養育費 (月額)</td><td class="pl-val" id="pl-raising">0万</td></tr>
-                <tr><td colspan="2"><div id="pl-raising-detail" class="pl-detail-box">対象なし</div></td></tr>
-                <tr class="pl-total"><td>月間収支</td><td class="pl-val" id="pl-net">0万</td></tr>
+                <tr><td class="pl-category" colspan="2">収入セクション</td></tr>
+                <tr><td>額面月収</td><td class="pl-val" id="plGross">0万</td></tr>
+                <tr><td>税・社保引去(推計)</td><td class="pl-val val-minus" id="plTax">0万</td></tr>
+                <tr><td>運用取り崩し額</td><td class="pl-val val-plus" id="plWithdraw">0万</td></tr>
+                <tr style="background:#e8f4fd;"><td><strong>手取り月収</strong></td><td class="pl-val val-plus" id="plNet">0万</td></tr>
+
+                <tr><td class="pl-category" colspan="2">支出セクション</td></tr>
+                <tr><td>基本生活費</td><td class="pl-val val-minus" id="plLiving">0万</td></tr>
+                <tr id="plCarRow"><td>自動車コスト</td><td class="pl-val val-minus" id="plCar">0万</td></tr>
+                <tr id="plChildRow"><td>養育費(生活費)</td><td class="pl-val val-minus" id="plChild">0万</td></tr>
+                <tr id="plEduRow"><td>教育費(学費)</td><td class="pl-val val-minus" id="plEdu">0万</td></tr>
+                <tr id="plInvestRow"><td>積立投資</td><td class="pl-val val-minus" id="plInvSpend">0万</td></tr>
+                <tr><td>イベント按分額</td><td class="pl-val val-minus" id="plEvent">0万</td></tr>
+
+                <tr style="border-top:2px solid #333; background:#f8f9fa;"><td><strong>最終収支（貯金）</strong></td><td class="pl-val" id="plTotalNet">0万</td></tr>
             </table>
+            <div id="plEventDetail" style="font-size:0.75rem; color:#666; margin-top:12px; padding:10px; background:#fdfdfe; border:1px solid #eee;"></div>
         </div>
     </div>
 </div>
 
 <script>
-let charts = {};
-let config = { isMarried: false, isInvest: false, incomeMode: 'fixed' };
+let chartMain = null;
+let config = { isMarried: false, isInvest: false, isCar: false, incomeMode: 'fixed', isStd: false };
+const defaultSalaries = { 20:400, 25:400, 30:600, 35:700, 40:750, 45:800, 50:850, 55:900, 60:450, 65:400, 70:0 };
 
 function init() {
-    const s = document.getElementById('childCount');
-    for(let i=0; i<=5; i++) s.innerHTML += `<option value="${i}">${i}人</option>`;
+    const cs = document.getElementById('childCount');
+    for(let i=0; i<=10; i++) cs.innerHTML += `<option value="${i}">${i}人</option>`;
     const grid = document.getElementById('salaryGrid');
     for(let a=20; a<=70; a+=5) {
-        grid.innerHTML += `<div class="grid-item" id="salary-group-${a}">${a}歳〜<div class="unit-input unit-man"><input type="number" class="s-input" data-age="${a}" value="450"></div></div>`;
+        grid.innerHTML += `<div>${a}歳〜<div class="unit-input unit-man"><input type="number" class="s-input" data-age="${a}" value="${defaultSalaries[a]||0}"></div></div>`;
     }
-    refreshIncomeGrid();
+    updateChildInputs();
 }
 
-function syncIncomeMode(mode) {
-    config.incomeMode = mode;
-    document.getElementById('basicSalaryContainer').style.display = (mode === 'fixed') ? 'block' : 'none';
-    document.getElementById('basicVariableGuide').style.display = (mode === 'variable') ? 'block' : 'none';
-    document.getElementById('detailIncomeAlert').style.display = (mode === 'fixed') ? 'block' : 'none';
-    refreshIncomeGrid();
-}
-
-function refreshIncomeGrid() {
-    const currentAge = parseInt(document.getElementById('baseAge').value) || 0;
-    const retireAge = parseInt(document.getElementById('retireAge').value) || 0;
-
-    document.querySelectorAll('.s-input').forEach(input => {
-        const a = parseInt(input.dataset.age);
-        const group = document.getElementById(`salary-group-${a}`);
-        // 1. 一括モード 2. 現在より前 3. 定年より後 をグレーアウト
-        const isDisabled = (config.incomeMode === 'fixed' || a < currentAge || a >= retireAge);
-        input.disabled = isDisabled;
-        group.classList.toggle('disabled-field', isDisabled);
-    });
-}
-
-function setToggle(type, val) {
-    config[type === 'married' ? 'isMarried' : 'isInvest'] = val;
-    if(type==='married') document.getElementById('basicMarriedExpand').style.display = val ? 'block' : 'none';
-    if(type==='invest') {
-        document.getElementById('basicInvestExpand').style.display = val ? 'block' : 'none';
-        document.getElementById('investMask').classList.toggle('disabled-field', !val);
+function formatCurrency(val) {
+    if(val >= 10000) {
+        const oku = Math.floor(val / 10000);
+        const man = Math.round(val % 10000);
+        return `${oku}億${man > 0 ? man + '万' : ''}円`;
     }
-    const prefix = (type==='married') ? 'm' : 'i';
-    document.getElementById(prefix+(val?'On':'Off')).classList.add('active');
-    document.getElementById(prefix+(val?'Off':'On')).classList.remove('active');
+    return Math.round(val) + "万円";
 }
 
-function openTab(evt, tabId) {
-    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-    document.getElementById(tabId).classList.add('active');
-    if(evt) evt.currentTarget.classList.add('active');
+function setIncomeMode(m) {
+    config.incomeMode = m;
+    document.getElementById('incFixed').classList.toggle('active', m==='fixed');
+    document.getElementById('incVar').classList.toggle('active', m==='variable');
+    document.getElementById('fixedIncomeBox').style.display = m==='fixed' ? 'flex' : 'none';
 }
 
-function updateChildUI() {
-    const count = document.getElementById('childCount').value;
-    document.getElementById('childRaisingPanel').style.display = count > 0 ? 'block' : 'none';
-    renderChildSettings();
+function setMarriage(v) {
+    config.isMarried = v;
+    document.getElementById('mOn').classList.toggle('active', v);
+    document.getElementById('mOff').classList.toggle('active', !v);
+    document.getElementById('marriedPanel').style.display = v ? 'block' : 'none';
+    if(v && config.isStd) applyStandardEvents();
+    else if(!v) document.getElementById('eventList').innerHTML = "";
+    updateChildInputs();
 }
 
-function renderChildSettings() {
-    const count = document.getElementById('childCount').value;
-    const container = document.getElementById('childSettingsContainer');
-    container.innerHTML = count > 0 ? '<div class="section-title">子供ごとの個別学費設定</div>' : '';
+function setInvest(v) {
+    config.isInvest = v;
+    document.getElementById('iOn').classList.toggle('active', v);
+    document.getElementById('iOff').classList.toggle('active', !v);
+    document.getElementById('investBasicBox').style.display = v ? 'block' : 'none';
+    document.getElementById('navInvest').style.display = v ? 'block' : 'none';
+}
+
+function setCar(v) {
+    config.isCar = v;
+    document.getElementById('carOn').classList.toggle('active', v);
+    document.getElementById('carOff').classList.toggle('active', !v);
+    document.getElementById('carPanel').style.display = v ? 'block' : 'none';
+}
+
+function toggleStandardMode() {
+    config.isStd = !config.isStd;
+    document.getElementById('stdModeBtn').innerText = config.isStd ? "標準ライフイベント：ON" : "標準ライフイベント：OFF";
+    document.getElementById('stdModeBtn').classList.toggle('active', config.isStd);
+    if(config.isStd && config.isMarried) applyStandardEvents();
+}
+
+function applyStandardEvents() {
+    const ma = parseInt(document.getElementById('mAge').value);
+    const list = document.getElementById('eventList');
+    list.innerHTML = "";
+    addEventRow("結婚式", ma, 350, 0);
+    addEventRow("家族旅行", ma, 10, 12);
+}
+
+function addEventRow(n="", a=30, c=0, f=0) {
+    const div = document.createElement('div'); div.className = 'event-row';
+    div.style = "display:grid; grid-template-columns: 2fr 1fr 1fr 1fr 30px; gap:5px; margin-bottom:5px;";
+    div.innerHTML = `<input type="text" class="ev-n" value="${n}"><input type="number" class="ev-a" value="${a}"><input type="number" class="ev-c" value="${c}"><select class="ev-f"><option value="0" ${f==0?'selected':''}>1回</option><option value="12" ${f==12?'selected':''}>毎年</option><option value="120" ${f==120?'selected':''}>10年毎</option></select><button onclick="this.parentElement.remove()" style="border:none;background:none;color:red;">×</button>`;
+    document.getElementById('eventList').appendChild(div);
+}
+
+function adjChildCost(v) {
+    const input = document.getElementById('childCost');
+    input.value = Math.max(0, parseInt(input.value) + v);
+}
+
+function updateChildInputs() {
+    const count = config.isMarried ? parseInt(document.getElementById('childCount').value) : 0;
+    const box = document.getElementById('childBirthSettings');
+    const eduArea = document.getElementById('eduCostArea');
+
+    eduArea.style.display = count > 0 ? 'block' : 'none';
+    box.innerHTML = count > 0 ? '<div class="section-title">子供の誕生時年齢設定</div>' : '';
+
+    const ma = parseInt(document.getElementById('mAge').value);
     for(let i=1; i<=count; i++) {
-        container.innerHTML += `<div class="card"><strong>第${i}子</strong> 誕生時親年齢: <input type="number" class="c-birth" value="${30+i*2}" style="width:50px;">
-            <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:5px; margin-top:5px; font-size:0.7rem;">
-                <div>幼<input type="number" class="c-k" value="40"></div><div>小<input type="number" class="c-s" value="45"></div><div>中<input type="number" class="c-j" value="50"></div>
-                <div>高<input type="number" class="c-h" value="55"></div><div>大<input type="number" class="c-d" value="150"></div>
-            </div></div>`;
+        box.innerHTML += `<div style="margin-bottom:10px;"><label>${i}人目の誕生時(親の年齢)</label><input type="number" class="c-birth" value="${ma + (i*2)}" style="width:100%; padding:10px; border-radius:8px; border:1px solid #ddd;"></div>`;
     }
 }
 
 function simulate() {
-    const startAge = parseInt(document.getElementById('baseAge').value);
-    const retireAge = parseInt(document.getElementById('retireAge').value);
-    const raisingCostPerM = parseFloat(document.getElementById('childRaisingCost').value) || 0;
-    const investM = config.isInvest ? parseFloat(document.getElementById('baseInvest').value) : 0;
-    const rate = config.isInvest ? parseFloat(document.getElementById('baseRate').value)/100 : 0;
+    document.getElementById('resultArea').style.display = 'block';
+    openTab({currentTarget: document.querySelector('button[onclick="openTab(event, \'basic\')"]')}, 'basic');
 
-    let cash = parseFloat(document.getElementById('baseInitialCash').value);
-    let investment = 0;
-    const yearlyData = [];
+    const startAge = parseInt(document.getElementById('baseAge').value);
+    let cash = parseFloat(document.getElementById('baseInitialCash').value) || 0;
+    let inv = (config.isInvest) ? parseFloat(document.getElementById('baseInitialInvest').value) : 0;
+    const retAge = parseInt(document.getElementById('retireAge').value);
+    const penAge = parseInt(document.getElementById('pensionAge').value);
+    const penVal = parseFloat(document.getElementById('pensionMonthly').value);
+
+    const results = [];
     let deadAge = null;
 
-    const sMap = {}; document.querySelectorAll('.s-input').forEach(i => sMap[i.dataset.age] = parseFloat(i.value));
-    const children = Array.from(document.querySelectorAll('.c-birth')).map((input, idx) => ({
-        birth: parseInt(input.value),
-        k: parseFloat(document.querySelectorAll('.c-k')[idx].value), s: parseFloat(document.querySelectorAll('.c-s')[idx].value),
-        j: parseFloat(document.querySelectorAll('.c-j')[idx].value), h: parseFloat(document.querySelectorAll('.c-h')[idx].value),
-        d: parseFloat(document.querySelectorAll('.c-d')[idx].value)
-    }));
+    // 養育費・学費計算用
+    const childC = config.isMarried ? parseInt(document.getElementById('childCount').value) : 0;
+    const childCostM = parseFloat(document.getElementById('childCost').value);
+    const eduHighY = parseFloat(document.getElementById('eduHigh').value);
+    const eduUniY = parseFloat(document.getElementById('eduUni').value);
 
-    for(let a = startAge; a <= 100; a++) {
-        let annualSal = 0;
-        if(a < retireAge) {
-            if(config.incomeMode === 'fixed') annualSal = parseFloat(document.getElementById('baseSalaryBasic').value);
-            else { annualSal = 450; Object.keys(sMap).sort((x,y)=>x-y).forEach(k => { if(a >= k) annualSal = sMap[k]; }); }
-        }
-        let salM = (annualSal * 0.8) / 12;
-        let livM = (config.isMarried && a >= document.getElementById('mAge').value) ? parseFloat(document.getElementById('marriedLiving').value) : parseFloat(document.getElementById('baseLiving').value);
-
-        let eduY = 0; let raisingCount = 0; let eduDetails = [];
-        children.forEach((c, idx) => {
-            let cage = a - c.birth;
-            let cost = 0; let label = "";
-            if(cage >= 3 && cage < 6) { cost = c.k; label = "幼稚園"; }
-            else if(cage >= 6 && cage < 12) { cost = c.s; label = "小学校"; }
-            else if(cage >= 12 && cage < 15) { cost = c.j; label = "中学校"; }
-            else if(cage >= 15 && cage < 18) { cost = c.h; label = "高校"; }
-            else if(cage >= 18 && cage < 22) { cost = c.d; label = "大学"; }
-            if(cost > 0) { eduY += cost; eduDetails.push(`第${idx+1}子：${label}`); }
-            if(cage >= 0 && cage <= 22) raisingCount++;
-        });
-
-        // 投資計算
-        let withY = (config.isInvest && a >= document.getElementById('startWithdrawAge').value) ? investment * (parseFloat(document.getElementById('withdrawRate').value)/100) : 0;
-        let netM = (salM + withY/12) - (livM + (eduY/12) + (raisingCount * raisingCostPerM) + investM);
-
-        cash += netM * 12;
-        if(config.isInvest) investment = (investment * (1 + rate)) + (investM * 12) - withY;
-        if(investment < 0) investment = 0;
-        if(cash < 0 && !deadAge) deadAge = a;
-
-        const dp = { age: a, cash, investment, salM, withY, livM, eduY, eduDetails, raisingCount, raisingCostPerM, balance: netM };
-        yearlyData.push(dp);
-        if(a === startAge) updatePL(dp);
+    const mAge = parseInt(document.getElementById('mAge').value);
+    let birthAges = [];
+    const birthInputs = document.querySelectorAll('.c-birth');
+    if(birthInputs.length > 0) {
+        birthAges = Array.from(birthInputs).map(i => parseInt(i.value));
+    } else {
+        for(let i=1; i<=childC; i++) birthAges.push(mAge + i*2);
     }
 
-    document.getElementById('resultArea').style.display = 'block';
-    document.getElementById('analysisArea').style.display = 'block';
-    document.getElementById('statusMessage').innerHTML = deadAge ? `<h2 style="color:var(--danger)">⚠️ ${deadAge}歳で枯渇</h2>` : `<h2 style="color:var(--success)">✅ 100歳まで安泰</h2>`;
-    updateCharts(yearlyData);
-    document.getElementById('tableBody').innerHTML = yearlyData.map(d => `<tr onclick='updatePL(${JSON.stringify(d)})'><td>${d.age}歳</td><td>${Math.round(d.cash)}万</td><td>${Math.round(d.investment)}万</td><td>${d.eduY}万</td><td>${Math.round(d.cash+d.investment)}万</td></tr>`).join('');
+    for(let a=startAge; a<=100; a++) {
+        let gross = 0;
+        if(a < retAge) {
+            if(config.incomeMode === 'fixed') gross = parseFloat(document.getElementById('baseSalaryBasic').value);
+            else { document.querySelectorAll('.s-input').forEach(i => { if(a >= parseInt(i.dataset.age)) gross = parseFloat(i.value); }); }
+        }
+
+        let netM = calculateNetM(gross);
+        if(a >= penAge) netM += penVal;
+
+        let livM = (config.isMarried && a >= mAge) ? parseFloat(document.getElementById('marriedLiving').value) : parseFloat(document.getElementById('baseLiving').value);
+        let carM = config.isCar ? parseFloat(document.getElementById('carRunM').value) : 0;
+
+        // 養育費（生活費）と学費の計算
+        let chiM = 0;
+        let eduTotalY = 0;
+
+        if(config.isMarried) {
+            birthAges.forEach(b => {
+                let cAge = a - b;
+                // 養育費: 0歳〜22歳(誕生日前)まで
+                if(cAge >= 0 && cAge < 22) chiM += childCostM;
+
+                // 学費: 高校(16,17,18歳) 大学(19,20,21,22歳) ※簡易的な年齢判定
+                if(cAge >= 15 && cAge <= 17) eduTotalY += eduHighY;
+                if(cAge >= 18 && cAge <= 21) eduTotalY += eduUniY;
+            });
+        }
+
+        let invM = 0; let withdrawM = 0;
+        if(config.isInvest) {
+            if(a < parseInt(document.getElementById('investEndAge').value)) invM = parseFloat(document.getElementById('investM').value);
+            if(a >= parseInt(document.getElementById('withdrawStartAge').value)) {
+                let yearlyWithdraw = inv * (parseFloat(document.getElementById('withdrawRate').value) / 100);
+                withdrawM = yearlyWithdraw / 12;
+                inv -= yearlyWithdraw;
+            }
+            inv *= (1 + parseFloat(document.getElementById('investRate').value) / 100);
+            inv += (invM * 12);
+        }
+
+        let evY = 0; let activeEvs = [];
+        document.querySelectorAll('.event-row').forEach(row => {
+            const age = parseInt(row.children[1].value);
+            const cost = parseFloat(row.children[2].value);
+            const freq = parseInt(row.children[3].value);
+            if((freq === 0 && a === age) || (freq > 0 && a >= age && (a-age)*12 % freq === 0)) {
+                evY += cost; activeEvs.push(row.children[0].value);
+            }
+        });
+        if(config.isCar && (a-startAge) % parseInt(document.getElementById('carCycle').value) === 0) {
+            evY += parseFloat(document.getElementById('carPrice').value); activeEvs.push("車買替");
+        }
+
+        let eduM = eduTotalY / 12; // 月次換算
+        let balanceM = (netM + withdrawM) - (livM + carM + chiM + eduM + invM + (evY/12));
+        cash += (balanceM * 12);
+        if(a === retAge) cash += parseFloat(document.getElementById('retirementPay').value);
+        if(cash < 0 && !deadAge) deadAge = a;
+
+        results.push({ age: a, cash, inv, balanceM, netM, withdrawM, grossM: Math.round(gross/12), livM, carM, chiM, eduM, invM, evY, activeEvs });
+    }
+    renderResult(results, deadAge);
 }
 
-function updatePL(d) {
-    document.getElementById('pl-age-label').innerText = `(${d.age}歳時)`;
-    document.getElementById('pl-salary').innerText = Math.round(d.salM + d.withY/12) + "万";
-    document.getElementById('pl-total-income').innerText = Math.round(d.salM + d.withY/12) + "万";
-    document.getElementById('pl-living').innerText = "-" + d.livM + "万";
-    document.getElementById('pl-edu').innerText = "-" + Math.round(d.eduY/12) + "万";
-    document.getElementById('pl-edu-detail').innerHTML = d.eduDetails.length ? d.eduDetails.join('<br>') : "なし";
-    document.getElementById('pl-raising').innerText = "-" + (d.raisingCount * d.raisingCostPerM) + "万";
-    document.getElementById('pl-raising-detail').innerText = d.raisingCount > 0 ? `${d.raisingCount}人分 (1人${d.raisingCostPerM}万/月)` : "対象なし";
-    const net = Math.round(d.balance);
-    document.getElementById('pl-net').innerText = (net > 0 ? "+" : "") + net + "万";
-    document.getElementById('pl-net').style.color = net >= 0 ? "var(--success)" : "var(--danger)";
+function calculateNetM(g) {
+    if(g<=0) return 0;
+    let n = g <= 400 ? g*0.8 : (g <= 750 ? 320+(g-400)*0.72 : 572+(g-750)*0.65);
+    return Math.round(n/12);
 }
 
-function updateCharts(data) {
-    if(charts.main) charts.main.destroy();
-    charts.main = new Chart(document.getElementById('assetChart'), {
+function renderResult(data, deadAge) {
+    const alertBox = document.getElementById('deadAlert');
+    alertBox.innerHTML = deadAge ?
+        `<div class="card" style="border-left:10px solid var(--danger);"><h2 style="color:var(--danger); margin:0;">⚠️ ${deadAge}歳で資金枯渇</h2><p>現金が底をつきました。支出の見直しが必要です。</p></div>` :
+        `<div class="card" style="border-left:10px solid var(--success);"><h2 style="color:var(--success); margin:0;">✅ 100歳まで安泰</h2><p>現金・資産ともに安定しています。</p></div>`;
+
+    document.getElementById('plCard').style.display = 'block';
+
+    if(chartMain) chartMain.destroy();
+    chartMain = new Chart(document.getElementById('mainChart'), {
         type: 'line',
-        data: { labels: data.map(d=>d.age), datasets: [{ label: '総資産', data: data.map(d=>Math.round(d.cash+d.investment)), borderColor: '#3498db', fill: true }] }
+        data: {
+            labels: data.map(d=>d.age),
+            datasets: [
+                { label: '現金', data: data.map(d=>d.cash), borderColor: '#3498db', backgroundColor: '#3498db', fill: false, tension: 0.1 },
+                { label: '総資産(現金+投資)', data: data.map(d=>d.cash+d.inv), borderColor: '#2ecc71', backgroundColor: '#2ecc71', fill: false, tension: 0.1 }
+            ]
+        },
+        options: {
+            scales: {
+                x: { title: { display: true, text: '年齢 (歳)' } },
+                y: { title: { display: true, text: '金額 (万円)' } }
+            },
+            interaction: { mode: 'index', intersect: false }
+        }
     });
+
+    document.getElementById('tableBody').innerHTML = data.map(d => `
+        <tr onclick="showPL(${JSON.stringify(d).replace(/"/g, '&quot;')})">
+            <td>${d.age}歳</td>
+            <td>${d.grossM*12}万</td>
+            <td>${d.netM*12}万</td>
+            <td>${Math.round(d.livM+d.carM+d.chiM+d.eduM+(d.evY/12))}万</td>
+            <td style="color:${d.cash<0?'red':'inherit'}">${Math.round(d.cash)}万</td>
+            <td>${Math.round(d.inv)}万</td>
+            <td><strong>${formatCurrency(d.cash+d.inv)}</strong></td>
+        </tr>`).join('');
+    showPL(data[0]);
 }
-function setCarToggle(v) { document.getElementById('carExpand').style.display = v ? 'block' : 'none'; }
+
+function showPL(d) {
+    document.getElementById('plAgeText').innerText = d.age + "歳";
+    document.getElementById('plGross').innerText = d.grossM + "万";
+    document.getElementById('plTax').innerText = "-" + (d.grossM - d.netM) + "万";
+    document.getElementById('plWithdraw').innerText = "+" + Math.round(d.withdrawM) + "万";
+    document.getElementById('plNet').innerText = Math.round(d.netM + d.withdrawM) + "万";
+    document.getElementById('plLiving').innerText = "-" + d.livM + "万";
+    document.getElementById('plCar').innerText = "-" + d.carM + "万";
+    document.getElementById('plChild').innerText = "-" + d.chiM + "万";
+    document.getElementById('plEdu').innerText = "-" + Math.round(d.eduM) + "万";
+    document.getElementById('plInvSpend').innerText = "-" + d.invM + "万";
+    document.getElementById('plEvent').innerText = "-" + Math.round(d.evY/12) + "万";
+    const total = document.getElementById('plTotalNet');
+    total.innerText = (d.balanceM>=0?"+":"") + Math.round(d.balanceM) + "万";
+    total.style.color = d.balanceM>=0?"var(--success)":"var(--danger)";
+    document.getElementById('plEventDetail').innerHTML = d.activeEvs.length ? `イベント: ${d.activeEvs.join(', ')}` : "特記なし";
+}
+
+function openTab(e, id) {
+    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+    if(e && e.currentTarget) e.currentTarget.classList.add('active');
+    else if(id === 'basic') document.querySelector('button[onclick="openTab(event, \'basic\')"]').classList.add('active');
+}
+
 init();
 </script>
 </body>
