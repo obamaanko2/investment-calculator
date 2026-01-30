@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
-    <title>人生設計サバイバル | 学費・詳細内訳版</title>
+    <title>人生設計サバイバル | 詳細学費・月額手取り版</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         :root {
@@ -94,7 +94,9 @@
                 <div style="display:grid; grid-template-columns: 1fr 1fr; gap:15px; margin-bottom:15px;">
                     <div><label>現在の年齢</label><input type="number" id="baseAge" value="25" class="unit-input"></div>
                     <div><label>初期現金</label><div class="unit-input unit-man"><input type="number" id="baseInitialCash" value="100"></div></div>
-                    <div><label>初期投資額</label><div class="unit-input unit-man"><input type="number" id="baseInitialInvest" value="0"></div></div>
+                </div>
+                <div id="initInvestArea" style="display:none; margin-bottom:15px;">
+                    <label>初期投資額</label><div class="unit-input unit-man"><input type="number" id="baseInitialInvest" value="0"></div>
                 </div>
 
                 <div class="section-title">年収設定</div>
@@ -127,14 +129,7 @@
                             </div>
                         </div>
                     </div>
-
-                    <div id="eduCostArea" style="display:none; border-top:1px solid #dcebf7; padding-top:15px;">
-                        <span style="font-size:0.9rem; font-weight:bold; color:#2980b9;">🏫 学費設定 (養育費とは別に加算)</span>
-                        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:15px; margin-top:10px;">
-                            <div><label>高校学費(年)</label><div class="unit-input unit-man"><input type="number" id="eduHigh" value="20"></div></div>
-                            <div><label>大学学費(年)</label><div class="unit-input unit-man"><input type="number" id="eduUni" value="120"></div></div>
-                        </div>
-                    </div>
+                    <p style="font-size:0.8rem; color:#666;">※学費の詳細設定は左の「生活費・学費」タブで行ってください。</p>
                 </div>
 
                 <div class="section-title">資産運用</div>
@@ -160,7 +155,7 @@
                 <div class="card">
                     <div class="section-title">1年ごとの詳細推移</div>
                     <table class="result-table">
-                        <thead><tr><th>年齢</th><th>額面年収</th><th>手取(年)</th><th>支出(月平均)</th><th>現金残高</th><th>投資残高</th><th>総資産</th></tr></thead>
+                        <thead><tr><th>年齢</th><th>額面年収</th><th>手取(月)<br><span style="font-size:0.7em;font-weight:normal;">給与+取崩</span></th><th>支出(月平均)</th><th>現金残高</th><th>投資残高</th><th>総資産</th></tr></thead>
                         <tbody id="tableBody"></tbody>
                     </table>
                 </div>
@@ -208,6 +203,7 @@
                     <div id="carOn" class="toggle-btn" onclick="setCar(true)">所有する</div>
                 </div>
                 <div id="carPanel" style="display:none;">
+                    <label>最初の購入年齢</label><input type="number" id="carStartAge" value="30" class="unit-input" placeholder="例: 25">
                     <label>車両購入予算</label><div class="unit-input unit-man"><input type="number" id="carPrice" value="300"></div>
                     <label>買い替えサイクル(年)</label><input type="number" id="carCycle" value="10" class="unit-input">
                     <label>維持費/月（燃料・保険・税金等）</label><div class="unit-input unit-man"><input type="number" id="carRunM" value="4"></div>
@@ -218,9 +214,26 @@
         <div id="detailLiving" class="tab-content">
             <h1>生活費・学費</h1>
             <div class="card">
+                <div class="section-title">生活費</div>
                 <label>独身時の生活費(月)</label><div class="unit-input unit-man"><input type="number" id="baseLiving" value="20"></div>
                 <label>結婚後の生活費(月)</label><div class="unit-input unit-man"><input type="number" id="marriedLiving" value="30"></div>
-                <div id="childBirthSettings"></div>
+
+                <div id="childSection" style="display:none;">
+                    <div class="section-title">子供・教育費設定</div>
+                    <div id="childBirthSettings"></div>
+
+                    <div id="eduCostArea" style="margin-top:20px; background:#f9f9f9; padding:15px; border-radius:8px;">
+                        <span style="font-size:0.9rem; font-weight:bold; color:#2980b9;">🏫 学費設定 (年間費用 / 1人あたり)</span>
+                        <p style="font-size:0.8rem; color:#666; margin-bottom:10px;">養育費とは別に、以下の年齢で加算されます（少し高めの設定値）</p>
+                        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
+                            <div><label>幼稚園(3年)</label><div class="unit-input unit-man"><input type="number" id="eduKg" value="50"></div></div>
+                            <div><label>小学校(6年)</label><div class="unit-input unit-man"><input type="number" id="eduElem" value="50"></div></div>
+                            <div><label>中学校(3年)</label><div class="unit-input unit-man"><input type="number" id="eduJr" value="80"></div></div>
+                            <div><label>高校(3年)</label><div class="unit-input unit-man"><input type="number" id="eduHigh" value="100"></div></div>
+                            <div style="grid-column: span 2;"><label>大学(4年)</label><div class="unit-input unit-man"><input type="number" id="eduUni" value="160"></div></div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -244,7 +257,7 @@
                 <tr><td>額面月収</td><td class="pl-val" id="plGross">0万</td></tr>
                 <tr><td>税・社保引去(推計)</td><td class="pl-val val-minus" id="plTax">0万</td></tr>
                 <tr><td>運用取り崩し額</td><td class="pl-val val-plus" id="plWithdraw">0万</td></tr>
-                <tr style="background:#e8f4fd;"><td><strong>手取り月収</strong></td><td class="pl-val val-plus" id="plNet">0万</td></tr>
+                <tr style="background:#e8f4fd;"><td><strong>手取り月収(合算)</strong></td><td class="pl-val val-plus" id="plNet">0万</td></tr>
 
                 <tr><td class="pl-category" colspan="2">支出セクション</td></tr>
                 <tr><td>基本生活費</td><td class="pl-val val-minus" id="plLiving">0万</td></tr>
@@ -307,6 +320,7 @@ function setInvest(v) {
     document.getElementById('iOn').classList.toggle('active', v);
     document.getElementById('iOff').classList.toggle('active', !v);
     document.getElementById('investBasicBox').style.display = v ? 'block' : 'none';
+    document.getElementById('initInvestArea').style.display = v ? 'block' : 'none'; // 初期投資額の表示制御
     document.getElementById('navInvest').style.display = v ? 'block' : 'none';
 }
 
@@ -346,15 +360,16 @@ function adjChildCost(v) {
 
 function updateChildInputs() {
     const count = config.isMarried ? parseInt(document.getElementById('childCount').value) : 0;
+    const section = document.getElementById('childSection');
     const box = document.getElementById('childBirthSettings');
-    const eduArea = document.getElementById('eduCostArea');
 
-    eduArea.style.display = count > 0 ? 'block' : 'none';
-    box.innerHTML = count > 0 ? '<div class="section-title">子供の誕生時年齢設定</div>' : '';
+    // 子供がいる場合のみ生活費タブにエリアを表示
+    section.style.display = count > 0 ? 'block' : 'none';
 
+    box.innerHTML = count > 0 ? '<div style="margin-bottom:10px; font-size:0.9rem;">子供の誕生時(親の年齢)</div>' : '';
     const ma = parseInt(document.getElementById('mAge').value);
     for(let i=1; i<=count; i++) {
-        box.innerHTML += `<div style="margin-bottom:10px;"><label>${i}人目の誕生時(親の年齢)</label><input type="number" class="c-birth" value="${ma + (i*2)}" style="width:100%; padding:10px; border-radius:8px; border:1px solid #ddd;"></div>`;
+        box.innerHTML += `<div style="margin-bottom:10px;"><label>${i}人目</label><input type="number" class="c-birth" value="${ma + (i*2)}" style="width:100%; padding:10px; border-radius:8px; border:1px solid #ddd;"></div>`;
     }
 }
 
@@ -375,6 +390,10 @@ function simulate() {
     // 養育費・学費計算用
     const childC = config.isMarried ? parseInt(document.getElementById('childCount').value) : 0;
     const childCostM = parseFloat(document.getElementById('childCost').value);
+
+    const eduKgY = parseFloat(document.getElementById('eduKg').value);
+    const eduElemY = parseFloat(document.getElementById('eduElem').value);
+    const eduJrY = parseFloat(document.getElementById('eduJr').value);
     const eduHighY = parseFloat(document.getElementById('eduHigh').value);
     const eduUniY = parseFloat(document.getElementById('eduUni').value);
 
@@ -386,6 +405,10 @@ function simulate() {
     } else {
         for(let i=1; i<=childC; i++) birthAges.push(mAge + i*2);
     }
+
+    // 車設定
+    const carStart = parseInt(document.getElementById('carStartAge').value);
+    const carCycle = parseInt(document.getElementById('carCycle').value);
 
     for(let a=startAge; a<=100; a++) {
         let gross = 0;
@@ -410,7 +433,10 @@ function simulate() {
                 // 養育費: 0歳〜22歳(誕生日前)まで
                 if(cAge >= 0 && cAge < 22) chiM += childCostM;
 
-                // 学費: 高校(16,17,18歳) 大学(19,20,21,22歳) ※簡易的な年齢判定
+                // 学費: 幼稚園(3-5) 小(6-11) 中(12-14) 高(15-17) 大(18-21)
+                if(cAge >= 3 && cAge <= 5) eduTotalY += eduKgY;
+                if(cAge >= 6 && cAge <= 11) eduTotalY += eduElemY;
+                if(cAge >= 12 && cAge <= 14) eduTotalY += eduJrY;
                 if(cAge >= 15 && cAge <= 17) eduTotalY += eduHighY;
                 if(cAge >= 18 && cAge <= 21) eduTotalY += eduUniY;
             });
@@ -437,8 +463,10 @@ function simulate() {
                 evY += cost; activeEvs.push(row.children[0].value);
             }
         });
-        if(config.isCar && (a-startAge) % parseInt(document.getElementById('carCycle').value) === 0) {
-            evY += parseFloat(document.getElementById('carPrice').value); activeEvs.push("車買替");
+
+        // 車の購入（指定年齢以上 かつ サイクルに合致）
+        if(config.isCar && a >= carStart && (a - carStart) % carCycle === 0) {
+            evY += parseFloat(document.getElementById('carPrice').value); activeEvs.push("車購入");
         }
 
         let eduM = eduTotalY / 12; // 月次換算
@@ -489,7 +517,7 @@ function renderResult(data, deadAge) {
         <tr onclick="showPL(${JSON.stringify(d).replace(/"/g, '&quot;')})">
             <td>${d.age}歳</td>
             <td>${d.grossM*12}万</td>
-            <td>${d.netM*12}万</td>
+            <td><strong>${Math.round(d.netM + d.withdrawM)}万</strong></td>
             <td>${Math.round(d.livM+d.carM+d.chiM+d.eduM+(d.evY/12))}万</td>
             <td style="color:${d.cash<0?'red':'inherit'}">${Math.round(d.cash)}万</td>
             <td>${Math.round(d.inv)}万</td>
